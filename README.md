@@ -34,7 +34,7 @@ Rock-Scissors-Paper (RPS) is a two-player game where players each simultaneously
 
 Kuhn Poker is a simple 3-card poker game by Harold E. Kuhn. Two players each ante 1 chip, i.e. bet 1 chip blind into the pot before the deal. Three cards, marked with numbers 1, 2, and 3, are shuffled, and one card is dealt to each player and held as private information.
 
-**Sequential Actions:** Player 1 $\rightarrow$ Player 2 $\rightarrow$ Player 1
+* **Sequential Actions:** Player 1 $\rightarrow$ Player 2 $\rightarrow$ Player 1
 
 |Player 1|Player 2|Player 1|&emsp;&emsp;&emsp;&emsp;&nbsp;Payoff|
 |   :-:  |   :-:  |   :-:  |   :-   |
@@ -43,6 +43,43 @@ Kuhn Poker is a simple 3-card poker game by Harold E. Kuhn. Two players each ant
 |pass|bet |bet |+2 to player with higher card|
 |bet |pass|    |+1 to player 1               |
 |bet |bet |    |+2 to player with higher card|
+
+* **Kuhn Poker Node**
+
+```mermaid
+graph TD
+R((root)) --> |1:2 or 1:3| A{1}
+R((root)) --> |2:1 or 2:3| B{2}
+R((root)) --> |3:1 or 3:2| C{3}
+
+A --> |P| A1{1P}
+A --> |B| A2{1B}
+B --> |P| B1{2P}
+B --> |B| B2{2B}
+C --> |P| C1{3P}
+C --> |B| C2{3B}
+
+A1 --> |P| A11( -1)
+A1 --> |B| A12{1PB}
+A2 --> |P| A21(1)
+A2 --> |B| A22( -2)
+A12 --> |P| A121( -1)
+A12 --> |B| A122( -2)
+
+B1 --> |P| B11(1/-1)
+B1 --> |B| B12{2PB}
+B2 --> |P| B21(1)
+B2 --> |B| B22(2/-2)
+B12 --> |P| B121( -1)
+B12 --> |B| B122(2/-2)
+
+C1 --> |P| C11(1)
+C1 --> |B| C12{3PB}
+C2 --> |P| C21( -1)
+C2 --> |B| C22(2)
+C12 --> |P| C121(1)
+C12 --> |B| C122(2)
+```
 
 ### 1.4 Liar Die
 

@@ -39,7 +39,11 @@ java code structure:
     }
 '''
 
+import logging
 import random
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
 
 # Kuhn Poker definitions
@@ -122,17 +126,21 @@ class KuhnTrainer(object):
         '''Train Kuhn poker'''
         cards = [1,2,3]
         util = 0
-        for _ in range(iterations):
+        logging.info(f'[iterations: {iterations}]')
+
+        for i in range(iterations):
             random.shuffle(cards)
-            util += self.cfr(cards, '', 1, 1)
+            util += self.cfr(cards, '', 1, 1, i)
+            if i == 0 or (i+1) % 1000 == 0:
+                logging.info(f'[iter: {i+1}] util: {util/(i+1)}')
 
-        print("Average game value:", util/iterations)
+        logging.info(f'Average game value: {util/iterations}')
         
-        print('Node_ID: [PASS, BET]')
+        logging.info('Node_ID: [PASS, BET]')
         for _, v in sorted(node_map.items()):
-            print(v.toString())
+            logging.info(v.toString())
 
-    def cfr(self, cards, history, p0, p1):
+    def cfr(self, cards, history, p0, p1, iter):
         '''Counterfactual regret minimization iteration'''
         plays = len(history)
         player = plays % 2
@@ -150,20 +158,35 @@ class KuhnTrainer(object):
         strategy = node.get_strategy(p0 if player == 0 else p1)
         util = [0] * NUM_ACTIONS
         node_util = 0
+
+        if iter == 0:
+            logging.info(f'[iter: {iter+1}_1] cards:{cards} history:{history} p0:{p0} p1:{p1} '
+                         f'plays:{plays} player:{player} opponent:{opponent} payoff:{payoff} '
+                         f'info_set:{info_set} strategy:{strategy} util:{util} node_util:{node_util}')
+
         for a in range(NUM_ACTIONS):
             next_history = history + ('p' if a == PASS else 'b')
+            
+            if iter == 0:
+                logging.info(f'[iter: {iter+1}_2] next_history:{next_history}')
+            
             if player == 0:
-                util[a] = - self.cfr(cards, next_history, p0 * strategy[a], p1)
+                util[a] = - self.cfr(cards, next_history, p0 * strategy[a], p1, iter)
             else:
-                util[a] = - self.cfr(cards, next_history, p0, p1 * strategy[a])
+                util[a] = - self.cfr(cards, next_history, p0, p1 * strategy[a], iter)
 
             node_util += strategy[a] * util[a]
+            
+            if iter == 0:
+                logging.info(f'[iter: {iter+1}_3] util:{util} node_util:{node_util}')
 
         # For each action, compute and accumulate counterfactual regret
         for a in range(NUM_ACTIONS):
             regret = util[a] - node_util
             node.regret_sum[a] += (p1 if player == 0 else p0) * regret
 
+        if iter == 0:
+            logging.info(f'[iter: {iter+1}_4] node_util:{node_util}')
         return node_util
 
     @staticmethod

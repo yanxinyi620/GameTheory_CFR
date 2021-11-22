@@ -88,9 +88,6 @@ Dudo is a bluffing dice game thought to originate from the Inca Empire circa 15t
 * **1-Die-Versus-1-Die Dudo (2 players with 1 die each)**
 We are limited to two 6-sided dice, yielding 13 possible actions: 12 claims of 1 or 2 of 6 different ranks, plus the doubting "dudo" action. Let us index claims in increasing order of strength starting at 0, and let the "dudo" action have index 12.
 
-  <font size=2>
-
   |Strength $s(n,r)$| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11|
   |       :-:       |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
   |**Claim $n × r$**|$1×2$|$1×3$|$1×4$|$1×5$|$1×6$|$1×1$|$2×2$|$2×3$|$2×4$|$2×5$|$2×6$|$2×1$|
-  </font>

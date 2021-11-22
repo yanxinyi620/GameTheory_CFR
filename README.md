@@ -9,7 +9,7 @@ This is a python version of some examples code from [An Introduction to Counterf
 ### 1.1 Paper outline
 
 * **Regret Matching and Minimization**
-  * Worked example: RPS regret minimization
+  * Worked example: RPS regret minimization (Fixed opponent strategy)
   * Exercise: RPS equilibrium, Colonel Blotto
 * **Counterfactual Regret Minimization (CFR)**
   * Worked example: Kuhn Poker equilibrium

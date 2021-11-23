@@ -126,15 +126,22 @@ class KuhnTrainer(object):
         '''Train Kuhn poker'''
         cards = [1,2,3]
         util = 0
-        logging.info(f'[iterations: {iterations}]')
 
         for i in range(iterations):
             random.shuffle(cards)
+            if i == 0 or (i+1) % 10000 == 0:
+                logging.info(f'[iter: {i+1}] cards: {cards}\n')
+                logging.info(f'iter\thistory\tp0\tp1\t'
+                             f'plays\tplayer\topponent\t'
+                             f'info_set\tstrategy\tpayoff\t'
+                             f'next_history\tutil\tnode_util\tregret')
+            
             util += self.cfr(cards, '', 1, 1, i)
             if i == 0 or (i+1) % 1000 == 0:
-                logging.info(f'[iter: {i+1}] util: {util/(i+1)}')
+                logging.info(f'[iter: {i+1}] avg_util: {util/(i+1)}\n')
 
-        logging.info(f'Average game value: {util/iterations}')
+        logging.info(f'[iterations: {iterations}]\n')
+        logging.info(f'Average game avg_util value: {util/iterations}')
         
         logging.info('Node_ID: [PASS, BET]')
         for _, v in sorted(node_map.items()):
@@ -146,29 +153,33 @@ class KuhnTrainer(object):
         player = plays % 2
         opponent = 1 - player
 
+        info_set = str(cards[player]) + history
+        node = self._infoset_node(info_set)
+        strategy = node.get_strategy(p0 if player == 0 else p1)
+
         payoff = self._terminal_payoff(plays, history, cards, player, opponent)
+
+        if iter == 0 or (iter+1) % 10000 == 0:
+            # logging.info(f'[iter: {iter+1}_1] hist:{history} p0:{p0} p1:{p1} '
+            #              f'plays:{plays} player:{player} opp:{opponent} '
+            #              f'info_set:{info_set} strategy:{strategy} payoff:{payoff}')
+            logging.info(f'[iter: {iter+1}_1]\t{history}\t{p0}\t{p1}\t'
+                         f'{plays}\t{player}\t{opponent}\t'
+                         f'{info_set}\t{strategy}\t{payoff}')
+
         if payoff:
             return payoff
 
-        info_set = str(cards[player]) + history
-
-        node = self._infoset_node(info_set)
-
         # For each action, recursively call cfr with additional history and probability
-        strategy = node.get_strategy(p0 if player == 0 else p1)
         util = [0] * NUM_ACTIONS
         node_util = 0
-
-        if iter == 0:
-            logging.info(f'[iter: {iter+1}_1] cards:{cards} history:{history} p0:{p0} p1:{p1} '
-                         f'plays:{plays} player:{player} opponent:{opponent} payoff:{payoff} '
-                         f'info_set:{info_set} strategy:{strategy} util:{util} node_util:{node_util}')
 
         for a in range(NUM_ACTIONS):
             next_history = history + ('p' if a == PASS else 'b')
             
-            if iter == 0:
-                logging.info(f'[iter: {iter+1}_2] next_history:{next_history}')
+            if iter == 0 or (iter+1) % 10000 == 0:
+                # logging.info(f'[iter: {iter+1}_2] next_hist:{next_history}')
+                logging.info(f'[iter: {iter+1}_2]\t\t\t\t\t\t\t\t\t\t{next_history}')
             
             if player == 0:
                 util[a] = - self.cfr(cards, next_history, p0 * strategy[a], p1, iter)
@@ -177,16 +188,18 @@ class KuhnTrainer(object):
 
             node_util += strategy[a] * util[a]
             
-            if iter == 0:
-                logging.info(f'[iter: {iter+1}_3] util:{util} node_util:{node_util}')
+            if iter == 0 or (iter+1) % 10000 == 0:
+                # logging.info(f'[iter: {iter+1}_3] util:{util} node_util:{node_util}')
+                logging.info(f'[iter: {iter+1}_3]\t\t\t\t\t\t\t\t\t\t\t{util}\t{node_util}')
 
         # For each action, compute and accumulate counterfactual regret
         for a in range(NUM_ACTIONS):
             regret = util[a] - node_util
             node.regret_sum[a] += (p1 if player == 0 else p0) * regret
 
-        if iter == 0:
-            logging.info(f'[iter: {iter+1}_4] node_util:{node_util}')
+        if iter == 0 or (iter+1) % 10000 == 0:
+            # logging.info(f'[iter: {iter+1}_4] node_util:{node_util} regret:{node.regret_sum}')
+            logging.info(f'[iter: {iter+1}_4]\t\t\t\t\t\t\t\t\t\t\t\t{node_util}\t{node.regret_sum}')
         return node_util
 
     @staticmethod
